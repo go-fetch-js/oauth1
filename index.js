@@ -36,10 +36,14 @@ module.exports = function(options) {
 			}
 
 			//generate the signature params
+			var data = {};
+			if (request.method() !== 'GET' && request.contentType === 'application/x-www-form-urlencoded') {
+				data = QS.parse(request.body());
+			}
 			var params = oauth.authorize({
 				method: request.method(),
 				url:    request.url(),
-				data:   request.method() !== 'GET' ? QS.parse(request.body()) : {} //TODO: this will break if content type is not form url encoded
+				data:   data
 			}, token);
 
 			//decide which auth method to use
