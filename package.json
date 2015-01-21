@@ -10,7 +10,7 @@
     "fetch",
     "go-fetch"
   ],
-  "version": "0.1.1",
+  "version": "0.1.2",
   "repository": {
     "type": "git",
     "url": "git@github.com:go-fetch-js/oauth1.git"
@@ -23,7 +23,7 @@
     "qs": "^2.3.3"
   },
   "peerDependencies": {
-    "go-fetch": "^0.2.1"
+    "go-fetch": "^1.0.0"
   },
   "license": "MIT"
 }

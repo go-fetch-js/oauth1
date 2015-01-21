@@ -2,6 +2,7 @@ var Client = require('go-fetch');
 var OAuth1 = require('..');
 
 Client()
+	.use(Client.plugins.contentType)
 	.use(Client.plugins.body())
 	.use(OAuth1({
 		consumer_key:     'key',
@@ -13,7 +14,7 @@ Client()
 		if (error) {
 			console.log(error)
 		} else {
-			console.log(response.status(), response.body);
+			console.log(response.getStatus(), response.getBody());
 		}
 		response.end();
 	})

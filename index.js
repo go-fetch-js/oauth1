@@ -37,39 +37,39 @@ module.exports = function(options) {
 
 			//generate the signature params
 			var data = {};
-			if (request.method() !== 'GET' && request.contentType === 'application/x-www-form-urlencoded') {
-				data = QS.parse(request.body());
+			if (request.getMethod() !== 'GET' && request.getContentType() === 'application/x-www-form-urlencoded') {
+				data = QS.parse(request.getBody());
 			}
 			var params = oauth.authorize({
-				method: request.method(),
-				url:    request.url(),
+				method: request.getMethod(),
+				url:    request.getUrl().toString(),
 				data:   data
 			}, token);
 
 			//decide which auth method to use
 			if (typeof(options.authorisation_method) === 'undefined' || options.authorisation_method === 'HEADER') {
 
-				request.header('Authorization', oauth.toHeader(params)['Authorization']);
+				request.setHeader('Authorization', oauth.toHeader(params)['Authorization']);
 
 			} else {
 
-				if (request.method() === 'GET') {
+				if (request.getMethod() === 'GET') {
 
 					//replace the query string with the OAuth params
-					var url = request.url();
+					var url = request.getUrl();
 					var parsedUrl = URL.parse(url);
 					parsedUrl.search = null;
 					parsedUrl.query = params;
 					url = URL.format(parsedUrl);
 
-					request.url(url);
+					request.setUrl(url);
 
 				} else {
 
 					//replace the body data with the OAuth params
 					request
-						.header('Content-Type', 'application/x-www-form-urlencoded')
-						.body(QS.stringify(params))
+						.setHeader('Content-Type', 'application/x-www-form-urlencoded')
+						.setBody(QS.stringify(params))
 					;
 
 				}
