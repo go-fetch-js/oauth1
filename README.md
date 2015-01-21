@@ -26,7 +26,6 @@ OAuth v1 authentication plugin for the [go-fetch](https://www.npmjs.com/package/
             } else {
                 console.log(response.getStatus(), response.getBody());
             }
-            response.end();
         })
     ;
     

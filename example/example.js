@@ -16,6 +16,5 @@ Client()
 		} else {
 			console.log(response.getStatus(), response.getBody());
 		}
-		response.end();
 	})
 ;
