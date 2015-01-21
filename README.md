@@ -12,6 +12,7 @@ OAuth v1 authentication plugin for the [go-fetch](https://www.npmjs.com/package/
     var OAuth1 = require('go-fetch-oauth1');
     
     Client()
+        .use(Client.plugins.contentType)
         .use(Client.plugins.body())
         .use(OAuth1({
             consumer_key:     'key',
@@ -23,7 +24,7 @@ OAuth v1 authentication plugin for the [go-fetch](https://www.npmjs.com/package/
             if (error) {
                 console.log(error)
             } else {
-                console.log(response.status(), response.body);
+                console.log(response.getStatus(), response.getBody());
             }
             response.end();
         })
@@ -35,14 +36,14 @@ OAuth v1 authentication plugin for the [go-fetch](https://www.npmjs.com/package/
 
 Apply an OAuth plugin to the client.
 
-    @param   {Object}  options
-    @param   {String}  options.consumer_key            The consumer key
-    @param   {String}  options.consumer_secret         The consumer secret
-    @param   {String}  [options.token]                 The access token
-    @param   {String}  [options.token_secret]          The access secret
-    @param   {String}  [options.signature_method]      The signature method - HMAC-SHA1|PLAINTEXT|RSA-SHA1
-    @param   {Boolean} [options.authorisation_method]  The authorisation method - HEADER|BODY|QUERY - HEADER
-    
+ * @param   {Object}  options
+ * @param   {String}  options.consumer_key            The consumer key
+ * @param   {String}  options.consumer_secret         The consumer secret
+ * @param   {String}  [options.token]                 The access token
+ * @param   {String}  [options.token_secret]          The access secret
+ * @param   {String}  [options.signature_method]      The signature method - HMAC-SHA1|PLAINTEXT|RSA-SHA1
+ * @param   {Boolean} [options.authorisation_method]  The authorisation method - HEADER|BODY|QUERY - HEADER
+ 
 ## ToDo
 
 - Tests

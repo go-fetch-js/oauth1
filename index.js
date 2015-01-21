@@ -11,7 +11,7 @@ var QS = require('qs');
  * @param   {String}  [options.token_secret]          The access secret
  * @param   {String}  [options.signature_method]      The signature method - HMAC-SHA1|PLAINTEXT|RSA-SHA1
  * @param   {Boolean} [options.authorisation_method]  The authorisation method - HEADER|BODY|QUERY - HEADER
- * @returns {Function}
+ * @returns {function(Client)}
  */
 module.exports = function(options) {
 	options = options || {};
