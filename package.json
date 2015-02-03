@@ -1,6 +1,6 @@
 {
   "name": "go-fetch-oauth1",
-  "description": "A pluggable HTTP client.",
+  "description": "OAuth v1 authentication.",
   "keywords": [
     "oauth",
     "oauth1",
@@ -10,7 +10,7 @@
     "fetch",
     "go-fetch"
   ],
-  "version": "0.1.4",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
     "url": "git@github.com:go-fetch-js/oauth1.git"
@@ -23,7 +23,12 @@
     "qs": "^2.3.3"
   },
   "peerDependencies": {
-    "go-fetch": "^1.0.0"
+    "go-fetch": "^2.0.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "go-fetch": "^2.0.1",
+    "go-fetch-content-type": "^0.1.0",
+    "go-fetch-parse-body": "^2.0.0"
+  }
 }

@@ -1,9 +1,11 @@
 var Client = require('go-fetch');
 var OAuth1 = require('..');
+var contentType = require('go-fetch-content-type');
+var parseBody = require('go-fetch-parse-body');
 
 Client()
-	.use(Client.plugins.contentType)
-	.use(Client.plugins.body())
+	.use(contentType)
+	.use(parseBody())
 	.use(OAuth1({
 		consumer_key:     'key',
 		consumer_secret:  'secret',

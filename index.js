@@ -18,8 +18,12 @@ module.exports = function(options) {
 
 	return function(client) {
 
-		client.on('before', function(request, response) {
-			var token = {};
+		client.on('before', function(event) {
+			var
+				token     = {},
+				request   = event.request,
+				response  = event.response
+			;
 
 			oauth = OAuth({
 				consumer: {

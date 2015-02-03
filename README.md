@@ -1,19 +1,21 @@
 # go-fetch-oauth1
 
-OAuth v1 authentication plugin for the [go-fetch](https://www.npmjs.com/package/go-fetch) HTTP client.
+OAuth v1 authentication.
 
 ## Installation
 
     npm install --save go-fetch go-fetch-oauth1
     
 ## Usage
-    
+
     var Client = require('go-fetch');
     var OAuth1 = require('go-fetch-oauth1');
+    var contentType = require('go-fetch-content-type');
+    var parseBody = require('go-fetch-parse-body');
     
     Client()
-        .use(Client.plugins.contentType)
-        .use(Client.plugins.body())
+        .use(contentType)
+        .use(parseBody())
         .use(OAuth1({
             consumer_key:     'key',
             consumer_secret:  'secret',
@@ -28,7 +30,7 @@ OAuth v1 authentication plugin for the [go-fetch](https://www.npmjs.com/package/
             }
         })
     ;
-    
+
 ## API
 
 ### OAuth1(options)
