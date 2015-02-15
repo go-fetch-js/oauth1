@@ -102,7 +102,7 @@ module.exports = function(options) {
 				if (error) return callback(error);
 
 				if (response.getStatus() !== 200) {
-					return callback(undefined, new Error('Invalid response status'));
+					return callback(undefined, new Error('Invalid response '+response.getStatus()));
 				}
 
 				var body = response.getBody();
@@ -149,17 +149,35 @@ module.exports = function(options) {
 		 * @returns {plugin}
 		 */
 		plugin.getAccessToken = function(token, callback) {
-			'/oauth/access_token?oauth_token=&oauth_verifier=';
 			var req = client.post('/oauth/access_token');
 
-			req.getUrl().getQuery().oauth_token = token.token;
+			client.use(body.urlencoded({once: true}));
+
+			var url = req.getUrl();
+			url.getQuery().oauth_token     = token.token;
+			url.getQuery().oauth_verifier  = token.verifier;
 
 			if (options.callback_url) {
-				req.getUrl().getQuery().oauth_callback = +options.callback_url;
+				url.getQuery().oauth_callback = +options.callback_url;
 			}
 
-			client.send(req, callback);
+			client.send(req, function(error, response) {
+				if (error) return callback(error);
 
+				if (response.getStatus() !== 200) {
+					return callback(undefined, new Error('Invalid response '+response.getStatus()));
+				}
+
+				var body = response.getBody();
+
+				callback(undefined, {
+					token:        body.oauth_token,
+					token_secret: body.oauth_token_secret
+				});
+
+			});
+
+			return this;
 		};
 
 	};
