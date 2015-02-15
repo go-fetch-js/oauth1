@@ -20,7 +20,9 @@
   },
   "dependencies": {
     "oauth-1.0a": "^0.1.1",
-    "qs": "^2.3.3"
+    "qs": "^2.3.3",
+    "go-fetch-content-type": "^0.1.0",
+    "go-fetch-parse-body": "^2.0.0"
   },
   "peerDependencies": {
     "go-fetch": "^2.0.3"
@@ -28,8 +30,6 @@
   "license": "MIT",
   "devDependencies": {
     "go-fetch": "^2.0.3",
-    "go-fetch-content-type": "^0.1.0",
-    "go-fetch-parse-body": "^2.0.0",
     "go-fetch-prefix-url": "^0.2.0"
   }
 }
