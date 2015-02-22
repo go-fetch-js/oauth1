@@ -6,40 +6,65 @@ var body = require('go-fetch-parse-body');
 /**
  * Authenticate the request using OAuth
  * @param   {Object}  options
- * @param   {String}  options.consumer_key            The consumer key
- * @param   {String}  options.consumer_secret         The consumer secret
- * @param   {String}  [options.token]                 The access token
- * @param   {String}  [options.token_secret]          The access secret
- * @param   {String}  [options.signature_method]      The signature method - HMAC-SHA1|PLAINTEXT|RSA-SHA1
- * @param   {Boolean} [options.authorisation_method]  The authorisation method - HEADER|BODY|QUERY - HEADER
+ *
+ * @param   {Object}  [options.consumer]              The consumer data
+ * @param   {string}  [options.consumer.public]       The public consumer value
+ * @param   {string}  [options.consumer.secret]       The secret consumer value
+ * @param   {string}  [options.consumer.callback_url] The consumer callback URL
+ *
+ * @param   {Object}  [options.token]                 The access token
+ * @param   {string}  [options.token.public]          The public access token value
+ * @param   {string}  [options.token.secret]          The secret access token value
+ *
+ * @param   {string}  [options.signature_method]      The signature method - HMAC-SHA1|PLAINTEXT|RSA-SHA1
+ * @param   {bool}    [options.authorisation_method]  The authorisation method - HEADER|BODY|QUERY - HEADER
+ *
+ * @param   {string}  options.consumer_key            The consumer key - deprecated
+ * @param   {string}  options.consumer_secret         The consumer secret - deprecated
+ * @param   {string}  options.callback_url            The consumer callback URL - deprecated
+ *
+ * @param   {string}  [options.token]                 The access token - deprecated
+ * @param   {string}  [options.token_secret]          The access secret - deprecated
+ *
  * @returns {function(Client)}
  */
 module.exports = function(options) {
 	options = options || {};
 
-	return function plugin(client) {
+	var
+		consumer      = options.consumer || {},
+		access_token  = typeof(options.token) === 'object' ? options.token : {}
+	;
+
+	//support deprecated properties temporarily
+	if (options.consumer_key) {
+		consumer.public = options.consumer_key;
+	}
+	if (options.consumer_secret) {
+		consumer.secret = options.consumer_secret;
+	}
+	if (options.callback_url) {
+		consumer.callback_url = options.callback_url;
+	}
+	if (typeof(options.token) === 'string') {
+		access_token.public = options.token;
+	}
+	if (options.token_secret) {
+		access_token.secret = options.token_secret;
+	}
+
+	var plugin = function(client) {
 
 		oauth = OAuth({
-			consumer: {
-				public: options.consumer_key,
-				secret: options.consumer_secret,
-				callback_url: options.callback_url
-			},
+			consumer:         consumer,
 			signature_method: options.signature_method
 		});
 
 		client.on('before', function(event) {
 			var
-				token     = {},
 				request   = event.request,
 				response  = event.response
 			;
-
-			//token is optional on some services
-			if (options.token && options.token_secret) {
-				token.public = options.token;
-				token.secret = options.token_secret;
-			}
 
 			//generate the signature params
 			var data = {};
@@ -50,7 +75,7 @@ module.exports = function(options) {
 				method: request.getMethod(),
 				url:    request.getUrl().toString(),
 				data:   data
-			}, token);
+			}, access_token);
 
 			//decide which auth method to use
 			if (typeof(options.authorisation_method) === 'undefined' || options.authorisation_method === 'HEADER') {
@@ -143,7 +168,7 @@ module.exports = function(options) {
 		};
 
 		/**
-		 * Get the access token
+		 * Get a new access token from the server
 		 * @param   {Object}                  token     The request token
 		 * @param   {function(Error, Object)} callback
 		 * @returns {plugin}
@@ -182,4 +207,15 @@ module.exports = function(options) {
 
 	};
 
+	/**
+	 * Set the access token used by the plugin
+	 * @param   {Object} token
+	 * @returns {plugin}
+	 */
+	plugin.setAccessToken = function(token) {
+		access_token = token;
+		return this;
+	};
+
+	return plugin;
 };
