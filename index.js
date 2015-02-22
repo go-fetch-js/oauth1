@@ -117,8 +117,8 @@ module.exports = function(options) {
 		plugin.getRequestToken = function(callback) {
 			var req = client.post('/oauth/request_token');
 
-			if (options.callback_url) {
-				req.getUrl().getQuery().oauth_callback = options.callback_url;
+			if (consumer.callback_url) {
+				req.getUrl().getQuery().oauth_callback = consumer.callback_url;
 			}
 
 			client.use(body.urlencoded({once: true}));
@@ -133,6 +133,8 @@ module.exports = function(options) {
 				var body = response.getBody();
 
 				callback(undefined, {
+					public:       body.oauth_token,
+					secret:       body.oauth_token_secret,
 					token:        body.oauth_token,
 					token_secret: body.oauth_token_secret
 				});
@@ -151,10 +153,10 @@ module.exports = function(options) {
 			this.getRequestToken(function(error, token) {
 				if (error) return callback(error);
 
-				var query = {oauth_token: token.token};
+				var query = {oauth_token: token.public || token.token};
 
-				if (options.callback_url) {
-					query.callback_url = options.callback_url;
+				if (consumer.callback_url) {
+					query.callback_url = consumer.callback_url;
 				}
 
 				var url = URL.format({
@@ -169,7 +171,9 @@ module.exports = function(options) {
 
 		/**
 		 * Get a new access token from the server
-		 * @param   {Object}                  token     The request token
+		 * @param   {Object}                  token           The request token
+		 * @param   {string}                  token.public    The request token public key
+		 * @param   {string}                  token.verifier
 		 * @param   {function(Error, Object)} callback
 		 * @returns {plugin}
 		 */
@@ -179,11 +183,11 @@ module.exports = function(options) {
 			client.use(body.urlencoded({once: true}));
 
 			var url = req.getUrl();
-			url.getQuery().oauth_token     = token.token;
+			url.getQuery().oauth_token     = token.public || token.token;
 			url.getQuery().oauth_verifier  = token.verifier;
 
-			if (options.callback_url) {
-				url.getQuery().oauth_callback = +options.callback_url;
+			if (consumer.callback_url) {
+				url.getQuery().oauth_callback = +consumer.callback_url;
 			}
 
 			client.send(req, function(error, response) {
@@ -196,6 +200,8 @@ module.exports = function(options) {
 				var body = response.getBody();
 
 				callback(undefined, {
+					public:       body.oauth_token,
+					secret:       body.oauth_token_secret,
 					token:        body.oauth_token,
 					token_secret: body.oauth_token_secret
 				});
