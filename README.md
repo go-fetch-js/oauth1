@@ -17,10 +17,14 @@ OAuth v1 authentication.
         .use(contentType)
         .use(parseBody())
         .use(OAuth1({
-            consumer_key:     'key',
-            consumer_secret:  'secret',
-            token:            'accesskey',
-            token_secret:     'accesssecret'
+            consumer: {
+                public: 'key',
+                secret: 'secret'
+            }, 
+            token: {
+                public: 'accesskey',
+                secret: 'accesssecret'
+            }
         }))
         .post('http://oauthbin.com/v1/echo?msg=Hello World', function(error, response) {
             if (error) {
@@ -38,12 +42,25 @@ OAuth v1 authentication.
 Apply an OAuth plugin to the client.
 
  * @param   {Object}  options
- * @param   {String}  options.consumer_key            The consumer key
- * @param   {String}  options.consumer_secret         The consumer secret
- * @param   {String}  [options.token]                 The access token
- * @param   {String}  [options.token_secret]          The access secret
- * @param   {String}  [options.signature_method]      The signature method - HMAC-SHA1|PLAINTEXT|RSA-SHA1
- * @param   {Boolean} [options.authorisation_method]  The authorisation method - HEADER|BODY|QUERY - HEADER
+ *
+ * @param   {Object}  [options.consumer]              The consumer data
+ * @param   {string}  [options.consumer.public]       The public consumer value
+ * @param   {string}  [options.consumer.secret]       The secret consumer value
+ * @param   {string}  [options.consumer.callback_url] The consumer callback URL
+ *
+ * @param   {Object}  [options.token]                 The access token
+ * @param   {string}  [options.token.public]          The public access token value
+ * @param   {string}  [options.token.secret]          The secret access token value
+ *
+ * @param   {string}  [options.signature_method]      The signature method - HMAC-SHA1|PLAINTEXT|RSA-SHA1
+ * @param   {bool}    [options.authorisation_method]  The authorisation method - HEADER|BODY|QUERY - HEADER
+ *
+ * @param   {string}  options.consumer_key            The consumer key - deprecated
+ * @param   {string}  options.consumer_secret         The consumer secret - deprecated
+ * @param   {string}  options.callback_url            The consumer callback URL - deprecated
+ *
+ * @param   {string}  [options.token]                 The access token - deprecated
+ * @param   {string}  [options.token_secret]          The access secret - deprecated
  
 ## ToDo
 
