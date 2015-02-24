@@ -54,13 +54,14 @@ Apply an OAuth plugin to the client.
  *
  * @param   {string}  [options.signature_method]      The signature method - HMAC-SHA1|PLAINTEXT|RSA-SHA1
  * @param   {bool}    [options.authorisation_method]  The authorisation method - HEADER|BODY|QUERY - HEADER
- *
- * @param   {string}  options.consumer_key            The consumer key - deprecated
- * @param   {string}  options.consumer_secret         The consumer secret - deprecated
- * @param   {string}  options.callback_url            The consumer callback URL - deprecated
- *
- * @param   {string}  [options.token]                 The access token - deprecated
- * @param   {string}  [options.token_secret]          The access secret - deprecated
+ 
+ ### plugin.fetchAuthorisationUrl(callback)
+ 
+ Fetch a URL for the user to authorise the application.
+ 
+ ### plugin.fetchAccessToken(token, callback)
+ 
+ Fetch an access token for an authorised request token.
  
 ## ToDo
 
