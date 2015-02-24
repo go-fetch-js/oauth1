@@ -19,13 +19,6 @@ var body = require('go-fetch-parse-body');
  * @param   {string}  [options.signature_method]      The signature method - HMAC-SHA1|PLAINTEXT|RSA-SHA1
  * @param   {bool}    [options.authorisation_method]  The authorisation method - HEADER|BODY|QUERY - HEADER
  *
- * @param   {string}  options.consumer_key            The consumer key - deprecated
- * @param   {string}  options.consumer_secret         The consumer secret - deprecated
- * @param   {string}  options.callback_url            The consumer callback URL - deprecated
- *
- * @param   {string}  [options.token]                 The access token - deprecated
- * @param   {string}  [options.token_secret]          The access secret - deprecated
- *
  * @returns {function(Client)}
  */
 module.exports = function(options) {
@@ -35,23 +28,6 @@ module.exports = function(options) {
 		consumer      = options.consumer || {},
 		access_token  = typeof(options.token) === 'object' ? options.token : {}
 	;
-
-	//support deprecated properties temporarily
-	if (options.consumer_key) {
-		consumer.public = options.consumer_key;
-	}
-	if (options.consumer_secret) {
-		consumer.secret = options.consumer_secret;
-	}
-	if (options.callback_url) {
-		consumer.callback_url = options.callback_url;
-	}
-	if (typeof(options.token) === 'string') {
-		access_token.public = options.token;
-	}
-	if (options.token_secret) {
-		access_token.secret = options.token_secret;
-	}
 
 	var plugin = function(client) {
 
@@ -111,11 +87,11 @@ module.exports = function(options) {
 		});
 
 		/**
-		 * Get the request token
+		 * Fetch the request token
 		 * @param   {function(Error, Object)} callback
 		 * @returns {plugin}
 		 */
-		plugin.getRequestToken = function(callback) {
+		plugin.fetchRequestToken = function(callback) {
 
 			//check there isn't already an access token set
 			if (access_token && access_token.public) {
@@ -139,11 +115,9 @@ module.exports = function(options) {
 
 				var body = response.getBody();
 
-				callback(undefined, {
+				callback(null, {
 					public:       body.oauth_token,
-					secret:       body.oauth_token_secret,
-					token:        body.oauth_token,
-					token_secret: body.oauth_token_secret
+					secret:       body.oauth_token_secret
 				});
 
 			});
@@ -152,15 +126,15 @@ module.exports = function(options) {
 		};
 
 		/**
-		 * Get the authorisation URL
+		 * Fetch the authorisation URL
 		 * @param   {function(Error, Object)} callback
 		 * @returns {plugin}
 		 */
-		plugin.getAuthorisationUrl = function(callback) {
-			this.getRequestToken(function(error, token) {
+		plugin.fetchAuthorisationUrl = function(callback) {
+			this.fetchRequestToken(function(error, token) {
 				if (error) return callback(error);
 
-				var query = {oauth_token: token.public || token.token};
+				var query = {oauth_token: token.public};
 
 				if (consumer.callback_url) {
 					query.callback_url = consumer.callback_url;
@@ -171,7 +145,7 @@ module.exports = function(options) {
 					query:    query
 				});
 
-				callback(undefined, url);
+				callback(null, url);
 			});
 			return this;
 		};
@@ -184,7 +158,7 @@ module.exports = function(options) {
 		 * @param   {function(Error, Object)} callback
 		 * @returns {plugin}
 		 */
-		plugin.getAccessToken = function(token, callback) {
+		plugin.fetchAccessToken = function(token, callback) {
 
 			//check there isn't already an access token set
 			if (access_token && access_token.public) {
@@ -195,7 +169,7 @@ module.exports = function(options) {
 
 			client.use(body.urlencoded({once: true, types: ['*/*']}));
 
-			url.getQuery().oauth_token     = token.public || token.token;
+			url.getQuery().oauth_token     = token.public;
 			url.getQuery().oauth_verifier  = token.verifier;
 
 			if (consumer.callback_url) {
@@ -210,12 +184,11 @@ module.exports = function(options) {
 				}
 
 				var body = response.getBody();
+				console.log(body);
 
-				callback(undefined, {
+				callback(null, {
 					public:       body.oauth_token,
-					secret:       body.oauth_token_secret,
-					token:        body.oauth_token,
-					token_secret: body.oauth_token_secret
+					secret:       body.oauth_token_secret
 				});
 
 			});
@@ -223,6 +196,14 @@ module.exports = function(options) {
 			return this;
 		};
 
+	};
+
+	/**
+	 * Get the access token used by the plugin
+	 * @returns {Object}
+	 */
+	plugin.getAccessToken = function() {
+		return access_token;
 	};
 
 	/**
