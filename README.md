@@ -67,6 +67,7 @@ Apply an OAuth plugin to the client.
 - Tests
 - Fix checking content-type checks for existing content with HTTP POST/PUTs 
 - Finish `authorisation_method` switches
+- .fetchAuthorisationUrl() and .fetchAccessToken() don't play nice when run at the same time
 
 ## License
 
