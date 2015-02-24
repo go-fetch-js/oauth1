@@ -10,7 +10,7 @@
     "fetch",
     "go-fetch"
   ],
-  "version": "1.1.1",
+  "version": "1.1.2",
   "repository": {
     "type": "git",
     "url": "git@github.com:go-fetch-js/oauth1.git"

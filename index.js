@@ -127,7 +127,7 @@ module.exports = function(options) {
 				if (error) return callback(error);
 
 				if (response.getStatus() !== 200) {
-					return callback(undefined, new Error('Invalid response '+response.getStatus()));
+					return callback(new Error('Invalid response '+response.getStatus()));
 				}
 
 				var body = response.getBody();
