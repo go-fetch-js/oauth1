@@ -184,7 +184,6 @@ module.exports = function(options) {
 				}
 
 				var body = response.getBody();
-				console.log(body);
 
 				callback(null, {
 					public:       body.oauth_token,
