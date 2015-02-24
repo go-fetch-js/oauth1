@@ -68,7 +68,7 @@ module.exports = function(options) {
 
 			//generate the signature params
 			var data = {};
-			if (request.getMethod() !== 'GET' && request.getContentType() === 'application/x-www-form-urlencoded') {
+			if (request.getMethod() !== 'GET' && request.isContentType('urlencoded')) {
 				data = QS.parse(request.getBody());
 			}
 			var params = oauth.authorize({
