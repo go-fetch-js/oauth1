@@ -68,9 +68,10 @@ module.exports = function(options) {
 
 			//generate the signature params
 			var data = {};
-			if (request.getMethod() !== 'GET' && request.isContentType('urlencoded')) {
+			if (request.getMethod() !== 'GET' && request.getContentType() === 'application/x-www-form-urlencoded') {
 				data = QS.parse(request.getBody());
 			}
+
 			var params = oauth.authorize({
 				method: request.getMethod(),
 				url:    request.getUrl().toString(),
@@ -115,15 +116,21 @@ module.exports = function(options) {
 		 * @returns {plugin}
 		 */
 		plugin.getRequestToken = function(callback) {
-			var req = client.post('/oauth/request_token');
+
+			//check there isn't already an access token set
+			if (access_token && access_token.public) {
+				return callback(new Error('An access token is already in use. Please remove the current access token before retrieving another.'));
+			}
+
+			var url = new client.constructor.Url('/oauth/request_token');
 
 			if (consumer.callback_url) {
-				req.getUrl().getQuery().oauth_callback = consumer.callback_url;
+				url.getQuery().oauth_callback = consumer.callback_url;
 			}
 
 			client.use(body.urlencoded({once: true, types: ['*/*']}));
 
-			client.send(req, function(error, response) {
+			client.post(url, function(error, response) {
 				if (error) return callback(error);
 
 				if (response.getStatus() !== 200) {
@@ -178,11 +185,16 @@ module.exports = function(options) {
 		 * @returns {plugin}
 		 */
 		plugin.getAccessToken = function(token, callback) {
-			var req = client.post('/oauth/access_token');
+
+			//check there isn't already an access token set
+			if (access_token && access_token.public) {
+				return callback(new Error('An access token is already in use. Please remove the current access token before retrieving another.'));
+			}
+
+			var url = new client.constructor.Url('/oauth/access_token');
 
 			client.use(body.urlencoded({once: true, types: ['*/*']}));
 
-			var url = req.getUrl();
 			url.getQuery().oauth_token     = token.public || token.token;
 			url.getQuery().oauth_verifier  = token.verifier;
 
@@ -190,7 +202,7 @@ module.exports = function(options) {
 				url.getQuery().oauth_callback = +consumer.callback_url;
 			}
 
-			client.send(req, function(error, response) {
+			client.post(url, function(error, response) {
 				if (error) return callback(error);
 
 				if (response.getStatus() !== 200) {
