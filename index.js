@@ -121,7 +121,7 @@ module.exports = function(options) {
 				req.getUrl().getQuery().oauth_callback = consumer.callback_url;
 			}
 
-			client.use(body.urlencoded({once: true}));
+			client.use(body.urlencoded({once: true, types: ['*/*']}));
 
 			client.send(req, function(error, response) {
 				if (error) return callback(error);
@@ -180,7 +180,7 @@ module.exports = function(options) {
 		plugin.getAccessToken = function(token, callback) {
 			var req = client.post('/oauth/access_token');
 
-			client.use(body.urlencoded({once: true}));
+			client.use(body.urlencoded({once: true, types: ['*/*']}));
 
 			var url = req.getUrl();
 			url.getQuery().oauth_token     = token.public || token.token;
