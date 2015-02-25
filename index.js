@@ -97,7 +97,7 @@ module.exports = function(options) {
 		});
 
 		/**
-		 * Fetch the request token
+		 * Retrieve a request token from the service
 		 * @param   {function(Error, Object)} callback
 		 * @returns {plugin}
 		 */
@@ -136,7 +136,7 @@ module.exports = function(options) {
 		};
 
 		/**
-		 * Get a new access token from the server
+		 * Retrieve an access token from the service
 		 * @param   {string}                  verifier
 		 * @param   {function(Error, Object)} callback
 		 * @returns {plugin}

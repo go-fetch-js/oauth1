@@ -67,7 +67,7 @@ OAuth v1 authentication.
 ### plugin.fetchRequestToken(callback)
 
     /**
-     * Fetch the request token
+     * Retrieve a request token from the service
      * @param   {function(Error, Object)} callback
      * @returns {plugin}
      */
@@ -75,7 +75,7 @@ OAuth v1 authentication.
 ### plugin.fetchAccessToken(verification, callback)
  
     /**
-     * Get a new access token from the server
+     * Retrieve an access token from the service
      * @param   {string}                  verifier
      * @param   {function(Error, Object)} callback
      * @returns {plugin}
