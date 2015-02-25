@@ -1,5 +1,7 @@
 # go-fetch-oauth1
 
+[![Circle CI](https://circleci.com/gh/go-fetch-js/oauth1.svg?style=svg)](https://circleci.com/gh/go-fetch-js/oauth1)
+
 OAuth v1 authentication.
 
 ## Installation
@@ -7,26 +9,30 @@ OAuth v1 authentication.
     npm install --save go-fetch go-fetch-oauth1
     
 ## Usage
-
-    var Client = require('go-fetch');
-    var OAuth1 = require('go-fetch-oauth1');
+    
+    var Client      = require('go-fetch');
+    var OAuth1      = require('go-fetch-oauth1');
+    var prefixUrl   = require('go-fetch-prefix-url');
     var contentType = require('go-fetch-content-type');
-    var parseBody = require('go-fetch-parse-body');
+    var parseBody   = require('go-fetch-parse-body');
+    
+    var oauth = OAuth1({
+        consumer: {
+            key:    'key',
+            secret: 'secret'
+        },
+        token: {
+            token:  'accesskey',
+            secret: 'accesssecret'
+        }
+    });
     
     Client()
+        .use(prefixUrl('http://oauthbin.com/v1'))
         .use(contentType)
         .use(parseBody())
-        .use(OAuth1({
-            consumer: {
-                public: 'key',
-                secret: 'secret'
-            }, 
-            token: {
-                public: 'accesskey',
-                secret: 'accesssecret'
-            }
-        }))
-        .post('http://oauthbin.com/v1/echo?msg=Hello World', function(error, response) {
+        .use(oauth)
+        .post('/echo?msg=Hello World', function(error, response) {
             if (error) {
                 console.log(error)
             } else {
@@ -39,36 +45,71 @@ OAuth v1 authentication.
 
 ### OAuth1(options)
 
-Apply an OAuth plugin to the client.
+    /**
+     * Authenticate the request using OAuth
+     * @param   {Object}  options
+     *
+     * @param   {Object}  [options.consumer]              The consumer data
+     * @param   {string}  [options.consumer.key]          The consumer key
+     * @param   {string}  [options.consumer.secret]       The consumer secret
+     * @param   {string}  [options.consumer.callback_url] The consumer callback URL
+     *
+     * @param   {Object}  [options.token]                 The token data
+     * @param   {string}  [options.token.token]           The token
+     * @param   {string}  [options.token.secret]          The token secret
+     *
+     * @param   {string}  [options.signature_method]      The signature method - HMAC-SHA1|PLAINTEXT|RSA-SHA1
+     * @param   {bool}    [options.authorisation_method]  The authorisation method - HEADER|BODY|QUERY - HEADER
+     *
+     * @returns {function(Client)}
+     */
 
- * @param   {Object}  options
- *
- * @param   {Object}  [options.consumer]              The consumer data
- * @param   {string}  [options.consumer.public]       The public consumer value
- * @param   {string}  [options.consumer.secret]       The secret consumer value
- * @param   {string}  [options.consumer.callback_url] The consumer callback URL
- *
- * @param   {Object}  [options.token]                 The access token
- * @param   {string}  [options.token.public]          The public access token value
- * @param   {string}  [options.token.secret]          The secret access token value
- *
- * @param   {string}  [options.signature_method]      The signature method - HMAC-SHA1|PLAINTEXT|RSA-SHA1
- * @param   {bool}    [options.authorisation_method]  The authorisation method - HEADER|BODY|QUERY - HEADER
+### plugin.fetchRequestToken(callback)
+
+    /**
+     * Fetch the request token
+     * @param   {function(Error, Object)} callback
+     * @returns {plugin}
+     */
+     
+### plugin.fetchAccessToken(verification, callback)
  
- ### plugin.fetchAuthorisationUrl(callback)
- 
- Fetch a URL for the user to authorise the application.
- 
- ### plugin.fetchAccessToken(token, callback)
- 
- Fetch an access token for an authorised request token.
+    /**
+     * Get a new access token from the server
+     * @param   {string}                  verifier
+     * @param   {function(Error, Object)} callback
+     * @returns {plugin}
+     */
+     
+### plugin.getToken()
+
+    /**
+     * Get the request/access token used by the plugin
+     * @returns {Object}
+     */
+     
+### plugin.setToken(token)
+
+    /**
+     * Set the request/access token used by the plugin
+     * @param   {Object} token
+     * @param   {string} token.token
+     * @param   {string} token.secret
+     * @returns {plugin}
+     */
+	 
+### plugin.getAuthorisationUrl() : string
+
+    /**
+     * Get the URL to the service's authorisation page which users should be sent to
+     * @returns {string}
+     */
+
  
 ## ToDo
 
-- Tests
 - Fix checking content-type checks for existing content with HTTP POST/PUTs 
 - Finish `authorisation_method` switches
-- .fetchAuthorisationUrl() and .fetchAccessToken() don't play nice when run at the same time
 
 ## License
 

@@ -8,13 +8,13 @@ var body = require('go-fetch-parse-body');
  * @param   {Object}  options
  *
  * @param   {Object}  [options.consumer]              The consumer data
- * @param   {string}  [options.consumer.public]       The public consumer value
- * @param   {string}  [options.consumer.secret]       The secret consumer value
+ * @param   {string}  [options.consumer.key]          The consumer key
+ * @param   {string}  [options.consumer.secret]       The consumer secret
  * @param   {string}  [options.consumer.callback_url] The consumer callback URL
  *
- * @param   {Object}  [options.token]                 The access token
- * @param   {string}  [options.token.public]          The public access token value
- * @param   {string}  [options.token.secret]          The secret access token value
+ * @param   {Object}  [options.token]                 The token data
+ * @param   {string}  [options.token.token]           The token
+ * @param   {string}  [options.token.secret]          The token secret
  *
  * @param   {string}  [options.signature_method]      The signature method - HMAC-SHA1|PLAINTEXT|RSA-SHA1
  * @param   {bool}    [options.authorisation_method]  The authorisation method - HEADER|BODY|QUERY - HEADER
@@ -22,17 +22,24 @@ var body = require('go-fetch-parse-body');
  * @returns {function(Client)}
  */
 module.exports = function(options) {
-	options = options || {};
+	options                         = options || {};
+	options.endpoints               = options.endpoints || {};
+	options.endpoints.request_token = options.endpoints.request_token || '/oauth/request_token';
+	options.endpoints.authorise     = options.endpoints.authorise || '/oauth/authorize';
+	options.endpoints.access_token  = options.endpoints.access_token || '/oauth/access_token';
 
 	var
-		consumer      = options.consumer || {},
-		access_token  = typeof(options.token) === 'object' ? options.token : {}
+		_consumer = options.consumer || {},
+		_token    = typeof(options.token) === 'object' ? options.token : {}
 	;
 
 	var plugin = function(client) {
 
 		oauth = OAuth({
-			consumer:         consumer,
+			consumer:         {
+				public: _consumer.key,
+				secret: _consumer.secret
+			},
 			signature_method: options.signature_method
 		});
 
@@ -44,7 +51,7 @@ module.exports = function(options) {
 
 			//generate the signature params
 			var data = {};
-			if (request.getMethod() !== 'GET' && request.getContentType() === 'application/x-www-form-urlencoded') {
+			if (request.getMethod() !== 'GET' && request.isContentType('urlencoded')) {
 				data = QS.parse(request.getBody());
 			}
 
@@ -52,7 +59,10 @@ module.exports = function(options) {
 				method: request.getMethod(),
 				url:    request.getUrl().toString(),
 				data:   data
-			}, access_token);
+			}, {
+				public: _token.token,
+				secret: _token.secret
+			});
 
 			//decide which auth method to use
 			if (typeof(options.authorisation_method) === 'undefined' || options.authorisation_method === 'HEADER') {
@@ -94,14 +104,14 @@ module.exports = function(options) {
 		plugin.fetchRequestToken = function(callback) {
 
 			//check there isn't already an access token set
-			if (access_token && access_token.public) {
-				return callback(new Error('An access token is already in use. Please remove the current access token before retrieving another.'));
+			if (_token && _token.token) {
+				return callback(new Error('A request/access token is already in use. Please remove the current request/access token before retrieving a request token.'));
 			}
 
-			var url = new client.constructor.Url('/oauth/request_token');
+			var url = new client.constructor.Url(options.endpoints.request_token);
 
-			if (consumer.callback_url) {
-				url.getQuery().oauth_callback = consumer.callback_url;
+			if (_consumer.callback_url) {
+				url.getQuery().oauth_callback = _consumer.callback_url;
 			}
 
 			client.use(body.urlencoded({once: true, types: ['*/*']}));
@@ -110,83 +120,51 @@ module.exports = function(options) {
 				if (error) return callback(error);
 
 				if (response.getStatus() !== 200) {
-					return callback(new Error('Invalid response '+response.getStatus()));
+					return callback(new Error('Unable to fetch request token. Received an invalid response: status='+response.getStatus()));
 				}
 
 				var body = response.getBody();
 
 				callback(null, {
-					public:       body.oauth_token,
+					token:        body.oauth_token,
 					secret:       body.oauth_token_secret
 				});
 
 			});
 
-			return this;
-		};
-
-		/**
-		 * Fetch the authorisation URL
-		 * @param   {function(Error, Object)} callback
-		 * @returns {plugin}
-		 */
-		plugin.fetchAuthorisationUrl = function(callback) {
-			this.fetchRequestToken(function(error, token) {
-				if (error) return callback(error);
-
-				var query = {oauth_token: token.public};
-
-				if (consumer.callback_url) {
-					query.callback_url = consumer.callback_url;
-				}
-
-				var url = URL.format({
-					pathname: '/oauth/authorize',
-					query:    query
-				});
-
-				callback(null, url);
-			});
 			return this;
 		};
 
 		/**
 		 * Get a new access token from the server
-		 * @param   {Object}                  token           The request token
-		 * @param   {string}                  token.public    The request token public key
-		 * @param   {string}                  token.verifier
+		 * @param   {string}                  verifier
 		 * @param   {function(Error, Object)} callback
 		 * @returns {plugin}
 		 */
-		plugin.fetchAccessToken = function(token, callback) {
+		plugin.fetchAccessToken = function(verifier, callback) {
 
-			//check there isn't already an access token set
-			if (access_token && access_token.public) {
-				return callback(new Error('An access token is already in use. Please remove the current access token before retrieving another.'));
+			//check there is already an access token set
+			if (!_token || !_token.token) {
+				return callback(new Error('No request token found. Please set a request token.'));
 			}
 
-			var url = new client.constructor.Url('/oauth/access_token');
+			var url = new client.constructor.Url(options.endpoints.access_token);
 
 			client.use(body.urlencoded({once: true, types: ['*/*']}));
 
-			url.getQuery().oauth_token     = token.public;
-			url.getQuery().oauth_verifier  = token.verifier;
-
-			if (consumer.callback_url) {
-				url.getQuery().oauth_callback = +consumer.callback_url;
-			}
+			url.getQuery().oauth_verifier  = verifier;
 
 			client.post(url, function(error, response) {
 				if (error) return callback(error);
 
 				if (response.getStatus() !== 200) {
-					return callback(new Error('Invalid response '+response.getStatus()));
+					return callback(new Error('Unable to fetch access token. Received an invalid response: status='+response.getStatus()));
 				}
 
 				var body = response.getBody();
 
 				callback(null, {
-					public:       body.oauth_token,
+					token:        body.oauth_token,
 					secret:       body.oauth_token_secret
 				});
 
@@ -198,21 +176,48 @@ module.exports = function(options) {
 	};
 
 	/**
-	 * Get the access token used by the plugin
+	 * Get the request/access token used by the plugin
 	 * @returns {Object}
 	 */
-	plugin.getAccessToken = function() {
-		return access_token;
+	plugin.getToken = function() {
+		return _token;
 	};
 
 	/**
-	 * Set the access token used by the plugin
+	 * Set the request/access token used by the plugin
 	 * @param   {Object} token
+	 * @param   {string} token.token
+	 * @param   {string} token.secret
 	 * @returns {plugin}
 	 */
-	plugin.setAccessToken = function(token) {
-		access_token = token;
+	plugin.setToken = function(token) {
+		_token = token;
 		return this;
+	};
+
+	/**
+	 * Get the URL to the service's authorisation page which users should be sent to
+	 * @returns {string}
+	 */
+	plugin.getAuthorisationUrl = function() {
+
+		//check there is already an access token set
+		if (!_token || !_token.token) {
+			throw new Error('No request token found. Please set a request token.');
+		}
+
+		var query = {oauth_token: _token.token};
+
+		if (_consumer.callback_url) {
+			query.callback_url = _consumer.callback_url;
+		}
+
+		var url = URL.format({
+			pathname: options.endpoints.authorise,
+			query:    query
+		});
+
+		return url;
 	};
 
 	return plugin;
