@@ -27,10 +27,13 @@
     "go-fetch": "^2.0.3",
     "go-fetch-content-type": "^0.3.0"
   },
-  "license": "MIT",
   "devDependencies": {
     "go-fetch": "^2.0.3",
     "go-fetch-prefix-url": "^0.2.0",
     "go-fetch-content-type": "^0.3.0"
-  }
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "license": "MIT"
 }
